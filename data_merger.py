@@ -1,4 +1,4 @@
-from openpyxl import load_workbook
+from openpyxl import load_workbook, Workbook
 from openpyxl.utils import get_column_letter
 
 # CREATE A DICTIONARY WITH KEY AS CUSTOMER ID, AND VALUE AS LIST WITH CUSTOMER 
@@ -11,6 +11,11 @@ datadump2_organized = {}
 
 wb = load_workbook("DATADUMP_01.xlsx")
 ws = wb.active
+
+# DESCRIPTIONS OF CLIENT IDs HAVE TO MATCH
+ws["A2"].value = "Franchise ID"
+
+
 
 # GET ALL CLIENTS IN THESE DICTS
 
@@ -49,8 +54,8 @@ for row in range(3, 79):
     # ELSE, ADD IT ELSEWHERE SO WE KNOW
 
 joint_data = {}
-datadump1_copy = datadump1_organized.copy()
-datadump2_copy = datadump2_organized.copy()
+datadump1_leftovers = datadump1_organized.copy()
+datadump2_leftovers = datadump2_organized.copy()
 
 for client1 in datadump1_organized:
     for client2 in datadump2_organized:
@@ -61,23 +66,39 @@ for client1 in datadump1_organized:
             joint_data[client] = datadump1_organized[client1]
             joint_data[client] += datadump2_organized[client2]
             
-            del datadump1_copy[client1]
-            del datadump2_copy[client2]
+            del datadump1_leftovers[client1]
+            del datadump2_leftovers[client2]
 
 
-print(len(joint_data))
-
-print(datadump1_copy)
-print(datadump2_copy)
-    
     
 # Produce the JOINT EXCEL SHEET
 
+
+wb = Workbook()
+ws = wb.active
+ws.title = "Merged Data"
+
+
+   
+
+keys = list(joint_data)
+
+
+for ID, row in enumerate(joint_data):
+    counter = 1
+    
+    # before it loops through the list, add the key to the first column.
+    ws["A"+str(ID+1)].value = keys[ID]
+    
+    for column in joint_data[row]:
+        counter += 1
+        char = get_column_letter(counter)
+        ws[char + str(ID+1)].value = column
     
     
-    
-    
-    
+
+
+wb.save('TEST.xlsx')
     
     
     
