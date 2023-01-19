@@ -1,6 +1,23 @@
 from openpyxl import load_workbook, Workbook
+from openpyxl.styles import Font, PatternFill, Border, Side
 from openpyxl.utils import get_column_letter
 import datetime 
+from operator import itemgetter
+import pandas as pd
+
+
+
+def month_year_presenter(date):
+    
+    if "/" in date:
+        strip1 = date.split("/")
+    else:
+        return "--"
+    
+    
+    datetime1 = datetime.datetime(int(strip1[2]), int(strip1[0]), int(strip1[1]))  # y, m, d
+    
+    return datetime1.strftime('%B, %Y')
 
 def days_to_months(dt_days):
     
@@ -15,7 +32,14 @@ def days_to_months(dt_days):
         days -= 30
     return str(months)
 
-
+def days_int(td):
+    
+    if td == str(td):
+        return td
+    else:
+        int_days = int(td.days)
+        return int_days
+    
 
 def time_check(td, time=75):
     """
@@ -63,6 +87,8 @@ def time_check(td, time=75):
                 return "Off Track (" + str(int_months) + " month(s) and " + str(int_days) + " day(s))" 
             
         
+        
+
 
 def date_subtraction(start, finish, format="days"):
     """
@@ -86,7 +112,7 @@ def date_subtraction(start, finish, format="days"):
         
     else:
         
-        return "Missing Information"
+        return "--"
     
     
     datetime1 = datetime.datetime(int(strip1[2]), int(strip1[0]), int(strip1[1]))  # y, m, d
@@ -118,25 +144,34 @@ def time_from_present(start, present=datetime.datetime.now(), format="days"):
         
     else:
         
-        return "Missing Information"
+        return "--"
     
     
     datetime1 = datetime.datetime(int(strip1[2]), int(strip1[0]), int(strip1[1]))  # y, m, d
     
-    return datetime1 - present
+    return present - datetime1
 
+def time_converter(date):
+    
+    if "/" in date:
+        strip1 = date.split("/")
+    
+    datetime1 = datetime.datetime(int(strip1[2]), int(strip1[0]), int(strip1[1]))  # y, m, d
+
+    return datetime1        
+    
+    
+    
 
 # CREATE A DICTIONARY WITH KEY AS CUSTOMER ID, AND VALUE AS LIST WITH CUSTOMER 
 # INFORMATION.  FIRST ITEM HAS KEY "ID" AND VALUE AS LIST WITH ALL COLUMN IDs
-
-
 
 
 datadump1_organized = {}
 datadump2_organized = {}
 
 
-wb = load_workbook("DATADUMP_01.xlsx")
+wb = load_workbook("1.xlsx")
 ws = wb.active
 
 # DESCRIPTIONS OF CLIENT IDs HAVE TO MATCH
@@ -165,9 +200,11 @@ for row in range(2, count + 1):
 
 
 
-wb = load_workbook("DATADUMP_02.xlsx")
+wb = load_workbook("2.xlsx")
 ws = wb.active
 
+
+# count the amount of rows with data
 count = 0
 for row in ws:
     if not all([cell.value is None for cell in row]):
@@ -210,19 +247,16 @@ for client1 in datadump1_organized:
             del datadump1_leftovers[client1]
             del datadump2_leftovers[client2]
         
-        
 for client in datadump1_leftovers:
     
     joint_data[client] = datadump1_leftovers[client]
     joint_data[client] += filler_list
     
-            
 
 keys = list(joint_data)    
 
 # FROM JOINT DATA,MAKE ONE SEPARATE LIST WITH THE DATA NEEDED FOR  
 # EACH OF THE TABLES.
-
 
 
 contruction_pipeline = []
@@ -239,24 +273,123 @@ for c, client in enumerate(joint_data):
             finance = "In Process / Self Funded"
         else:
             finance = "Funded"
-            
-        contruction_pipeline.append(
-            {   "Franchise ID" : client,
-                "Project Status" : joint_data[client][35],
-                "City, State" : joint_data[client][37] + ", " + joint_data[client][38],
-                "Architecturals" : time_check(date_subtraction(joint_data[client][9], joint_data[client][10])),
-                "Permitting" : time_check(date_subtraction(joint_data[client][10], joint_data[client][11])),
-                "Active Construction" : time_check(date_subtraction(joint_data[client][15], joint_data[client][25])),
-                "Final Fitout" : time_check(date_subtraction(joint_data[client][25], joint_data[client][31])),
-                "Financing Completed" : finance,
-                "Project Start Date" : joint_data[client][32],
-                "Projected Opening" : joint_data[client][39],
-                "Total Months in Process" : days_to_months(time_from_present(joint_data[client][39])),
-                "Projected Total Project" : "???",
-                "Notes" : ""
-                
-             })
         
+        # Filtering by STATUS
+        
+        if joint_data[client][35] == "Active Interior Construction":
+        
+            contruction_pipeline.append(
+                {   "Franchise ID" : client,
+                    "Project Status" : joint_data[client][35],
+                    "City, State" : joint_data[client][37] + ", " + joint_data[client][38],
+                    "Architecturals (2.5 Months)" : time_check(date_subtraction(joint_data[client][9], joint_data[client][10])),
+                    "Permitting (2.5 Months)" : time_check(date_subtraction(joint_data[client][10], joint_data[client][11])),
+                    "Active Construction (5 months)" : time_check(time_from_present(joint_data[client][15]), time = 150),
+                    "Final Fitout" : time_check(date_subtraction(joint_data[client][25], joint_data[client][31])),
+                    "Financing Completed" : finance,
+                    "Project Start Date" : joint_data[client][1],
+                    "Projected Opening" : joint_data[client][39],
+                    "Total Months in Process" : days_to_months(time_from_present(joint_data[client][1])),
+                    "Projected Total Project" : days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])),
+                    "Notes" : "",
+                    "Sorter" : 0
+                    
+                 })
+            
+        elif joint_data[client][35] == "Pre-Construction":
+            
+            contruction_pipeline.append(
+                {   "Franchise ID" : client,
+                    "Project Status" : joint_data[client][35],
+                    "City, State" : joint_data[client][37] + ", " + joint_data[client][38],
+                    "Architecturals (2.5 Months)" : time_check(date_subtraction(joint_data[client][9], joint_data[client][10])),
+                    "Permitting (2.5 Months)" : time_check(date_subtraction(joint_data[client][10], joint_data[client][11])),
+                    "Active Construction (5 months)" : "PRE-CONSTRUCTION",
+                    "Final Fitout" : time_check(date_subtraction(joint_data[client][25], joint_data[client][31])),
+                    "Financing Completed" : finance,
+                    "Project Start Date" : joint_data[client][1],
+                    "Projected Opening" : joint_data[client][39],
+                    "Total Months in Process" : days_to_months(time_from_present(joint_data[client][1])),
+                    "Projected Total Project" : days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])),
+                    "Notes" : "",
+                    "Sorter" : 1
+                    
+                 })
+            
+            
+        elif joint_data[client][35] == "Out For Building Permit":
+            
+            contruction_pipeline.append(
+                {   "Franchise ID" : client,
+                    "Project Status" : joint_data[client][35],
+                    "City, State" : joint_data[client][37] + ", " + joint_data[client][38],
+                    "Architecturals (2.5 Months)" : time_check(date_subtraction(joint_data[client][9], joint_data[client][10]), time = 75),
+                    "Permitting (2.5 Months)" : time_check(time_from_present(joint_data[client][10]), time = 75),
+                    "Active Construction (5 months)" : time_check(date_subtraction(joint_data[client][15], joint_data[client][25])),
+                    "Final Fitout" : time_check(date_subtraction(joint_data[client][25], joint_data[client][31])),
+                    "Financing Completed" : finance,
+                    "Project Start Date" : joint_data[client][1],
+                    "Projected Opening" : joint_data[client][39],
+                    "Total Months in Process" : days_to_months(time_from_present(joint_data[client][1])),
+                    "Projected Total Project" : days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])),
+                    "Notes" : "",
+                    "Sorter" : 2
+                    
+                 })
+            
+            
+        elif joint_data[client][35] ==  "Architectural Design":
+            
+            contruction_pipeline.append(
+                {   "Franchise ID" : client,
+                    "Project Status" : joint_data[client][35],
+                    "City, State" : joint_data[client][37] + ", " + joint_data[client][38],
+                    "Architecturals (2.5 Months)" :time_check(time_from_present(joint_data[client][9]), time=75),
+                    "Permitting (2.5 Months)" : time_check(date_subtraction(joint_data[client][10], joint_data[client][11])),
+                    "Active Construction (5 months)" : time_check(date_subtraction(joint_data[client][15], joint_data[client][25])),
+                    "Final Fitout" : time_check(date_subtraction(joint_data[client][25], joint_data[client][31])),
+                    "Financing Completed" : finance,
+                    "Project Start Date" : joint_data[client][1],
+                    "Projected Opening" : joint_data[client][39],
+                    "Total Months in Process" : days_to_months(time_from_present(joint_data[client][1])),
+                    "Projected Total Project" : days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])),
+                    "Notes" : "",
+                    "Sorter" : 3
+                    
+                 })
+            
+            
+        elif joint_data[client][35] == "Ground Up Architecturals":
+            
+            contruction_pipeline.append(
+                {   "Franchise ID" : client,
+                    "Project Status" : joint_data[client][35],
+                    "City, State" : joint_data[client][37] + ", " + joint_data[client][38],
+                    "Architecturals (2.5 Months)" : time_check(time_from_present(joint_data[client][9]), time=75),
+                    "Permitting (2.5 Months)" : time_check(date_subtraction(joint_data[client][10], joint_data[client][11])),
+                    "Active Construction (5 months)" : time_check(date_subtraction(joint_data[client][15], joint_data[client][25])),
+                    "Final Fitout" : time_check(date_subtraction(joint_data[client][25], joint_data[client][31])),
+                    "Financing Completed" : finance,
+                    "Project Start Date" : joint_data[client][1],
+                    "Projected Opening" : joint_data[client][39],
+                    "Total Months in Process" : days_to_months(time_from_present(joint_data[client][1])),
+                    "Projected Total Project" : days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])),
+                    "Notes" : "",
+                    "Sorter" : 4
+                    
+                 })
+            
+# ORDER CONTRUCTION_PIPELINE LIST BY STATUS HERE:
+construction_sorted = []
+construction_sorted = sorted(contruction_pipeline, key=itemgetter('Sorter'))
+    
+# delete sorter
+for client in construction_sorted:
+    del client['Sorter']
+            
+            
+            
+            
 
 realestate_pipeline = []
 
@@ -265,36 +398,103 @@ for c, client in enumerate(joint_data):
         pass
     
     else:
-        realestate_pipeline.append({  
-                "Franchise ID" : client,
-                "Project Status" : joint_data[client][35],
-                "City" : joint_data[client][37],
-                "State/Province" : joint_data[client][37],
-                "Site Selection" : time_check(date_subtraction(joint_data[client][2], joint_data[client][3]), time = 45),
-                "LOI Negotiation" : time_check(date_subtraction(joint_data[client][4], joint_data[client][6]), time = 150),
-                "Lease Negotiation" : time_check(date_subtraction(joint_data[client][6],joint_data[client][9]), time = 90),
-                "Expected Opening Date" : joint_data[client][39],
-                "Months in Process" : days_to_months(time_from_present(joint_data[client][32])),
-                "Projected Total Months" : "???"
-             })
-
+        # FILTERING BY STATUS
+        if joint_data[client][35] == "Lease Negotiations (LOI Signed)":
+        
+            realestate_pipeline.append({  
+                    "Franchise ID" : client,
+                    "Project Status" : joint_data[client][35],
+                    "City" : joint_data[client][37],
+                    "State/Province" : joint_data[client][38],
+                    "Site Selection (45 days)" : time_check(date_subtraction(joint_data[client][2], joint_data[client][3]), time = 45),
+                    "LOI Negotiations (5 months)" : time_check(date_subtraction(joint_data[client][4], joint_data[client][6]), time = 150),
+                    "Lease Negotiations (3 months)" : time_check(time_from_present(joint_data[client][6]), time=90),
+                    "Expected Opening Date" : joint_data[client][39],
+                    "Months in Process" : days_to_months(time_from_present(joint_data[client][1])),
+                    "Projected Total Months" : days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])),
+                    "Sorter" : 0
+                 })
+          
+            
+        elif joint_data[client][35] == "LOI Negotiations":
+            
+            realestate_pipeline.append({  
+                    "Franchise ID" : client,
+                    "Project Status" : joint_data[client][35],
+                    "City" : joint_data[client][37],
+                    "State/Province" : joint_data[client][38],
+                    "Site Selection (45 days)" : time_check(date_subtraction(joint_data[client][2], joint_data[client][3]), time = 45),
+                    "LOI Negotiations (5 months)" : time_check(time_from_present(joint_data[client][4]), time=150),
+                    "Lease Negotiations (3 months)" : time_check(date_subtraction(joint_data[client][6], joint_data[client][9]), time = 90),
+                    "Expected Opening Date" : joint_data[client][39],
+                    "Months in Process" : days_to_months(time_from_present(joint_data[client][1])),
+                    "Projected Total Months" : days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])),
+                    "Sorter" : 1
+                 })
+            
+        elif joint_data[client][35] == "Site Selection":
+            
+            realestate_pipeline.append({  
+                    "Franchise ID" : client,
+                    "Project Status" : joint_data[client][35],
+                    "City" : joint_data[client][37],
+                    "State/Province" : joint_data[client][38],
+                    "Site Selection (45 days)" : time_check(time_from_present(joint_data[client][2]), time = 45),
+                    "LOI Negotiations (5 months)" : time_check(date_subtraction(joint_data[client][4], joint_data[client][6]), time = 150),
+                    "Lease Negotiations (3 months)" : time_check(date_subtraction(joint_data[client][6],joint_data[client][9]), time = 90),
+                    "Expected Opening Date" : joint_data[client][39],
+                    "Months in Process" : days_to_months(time_from_present(joint_data[client][1])),
+                    "Projected Total Months" : days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])),
+                    "Sorter" : 2
+                 })
+           
+        
+                
+# ORDER REALESTATE_PIPELINE BY STATUS HERE:
+    
+    
+real_estate_sorted = sorted(realestate_pipeline, key=itemgetter('Sorter'))
+    
+# delete sorter
+for client in real_estate_sorted:
+    del client['Sorter']
+    
+    
+    
+AVERAGE_SUM = 0
+AVERAGE_COUNT = 0
 
 open_schools = []
-
+largest = None
 for c, client in enumerate(joint_data):
     if c == 0:
         pass
     
-    else:
-        if joint_data[client][28] != "--":
+    elif joint_data[client][28] != "--":
             open_schools.append({  
                      "Franchise ID" : client,
                      "City, State" : joint_data[client][37] + ", " + joint_data[client][38],
-                     "Open Date" : joint_data[client][28],
-                     "Months to open" : time_check(date_subtraction(joint_data[client][1],joint_data[client][28]), time = 0),
-                     "Opening Order" : "index of list sorted by the open date"
+                     "Open Date" : month_year_presenter(joint_data[client][28]),
+                     "Months to Open" : time_check(date_subtraction(joint_data[client][1],joint_data[client][28]), time = 0),
+                     "DaysInt" : days_int(time_from_present(joint_data[client][28]))
                  })
+            AVERAGE_SUM += days_int(date_subtraction(joint_data[client][1],joint_data[client][28]))
+            AVERAGE_COUNT += 1
+            
+        
+        
+#   ORDER OPEN_SCHOOLS BY OPEN DATE HERE 
 
+open_schools_sorted = sorted(open_schools, key=itemgetter('DaysInt'))
+
+
+# ORDER JOINT_DATA BY CUSTOMER ID
+
+customer_info = {}
+
+for i in sorted(joint_data):
+    customer_info[i] = joint_data[i]
+    
 
 # REAL ESTATE PIPELINE TABLE ITERATION
 
@@ -303,18 +503,39 @@ wb = Workbook()
 ws = wb.active
 ws.title = "Real Estate Pipeline"
 
-titles = list(realestate_pipeline[0])
+titles = list(real_estate_sorted[0])
 values = []
 
 ws.append(titles)
-row = 0
-for client in realestate_pipeline:
+row = 1
+for client in real_estate_sorted:
     column = 0
     row += 1
     for key in client:
         column += 1
         char = get_column_letter(column)
+        
+        #Conditional coloring of the DEV PROCESS
+        if 5 <= column <= 7:
+            if "Off" in client[key]:
+                ws[char + str(row)].fill = PatternFill(fill_type = "solid",
+                                                       start_color = "d78f9a",
+                                                       end_color = "d78f9a")
+            elif "On" in client[key]:
+                ws[char + str(row)].fill = PatternFill(fill_type = "solid",
+                                                       start_color = "7fe085",
+                                                       end_color = "7fe085")
+                
+                
+        ws[char + str(row)].border = Border(left = Side(border_style = "medium", color = 'b2b2b2'),
+                                            right = Side(border_style = "medium", color = 'b2b2b2'),
+                                            top = Side(border_style = "medium", color = 'b2b2b2'),
+                                            bottom = Side(border_style = "medium", color = 'b2b2b2'))
+                                            
         ws[char + str(row)].value = client[key]
+        
+        
+
         
 
 # CONTRUCTION PIPELINE TABLE ITERATION
@@ -322,29 +543,102 @@ for client in realestate_pipeline:
 wb.create_sheet("Construction Pipeline")
 ws = wb["Construction Pipeline"]
 
-titles = list(contruction_pipeline[0])
+titles = list(construction_sorted[0])
 values = []
 
 ws.append(titles)
-row = 0
-for client in contruction_pipeline:
+row = 1
+for client in construction_sorted:
     column = 0
     row += 1
     for key in client:
         column += 1
         char = get_column_letter(column)
+        
+        #Conditional coloring of the DEV PROCESS
+        if 4 <= column <= 7:
+            if "Off" in client[key]:
+                ws[char + str(row)].fill = PatternFill(fill_type = "solid",
+                                                       start_color = "d78f9a",
+                                                       end_color = "d78f9a")
+            elif "On" in client[key]:
+                ws[char + str(row)].fill = PatternFill(fill_type = "solid",
+                                                       start_color = "7fe085",
+                                                       end_color = "7fe085")
+            elif "PRE-CONSTRUCTION" in client[key]:
+                ws[char + str(row)].fill = PatternFill(fill_type = "solid",
+                                                       start_color = "FFA400",
+                                                       end_color = "FFA400")
+                
+        ws[char + str(row)].border = Border(left = Side(border_style = "medium", color = 'b2b2b2'),
+                                            right = Side(border_style = "medium", color = 'b2b2b2'),
+                                            top = Side(border_style = "medium", color = 'b2b2b2'),
+                                            bottom = Side(border_style = "medium", color = 'b2b2b2'))
+                                            
         ws[char + str(row)].value = client[key]
         
-    
+        
+        
+# OPEN SCHOOLS TABLE ITERATION
 wb.create_sheet("Open Schools")
 ws = wb["Open Schools"]
+
+
+# delete days_int
+for client in open_schools_sorted:
+    del client['DaysInt']
+
 
 titles = list(open_schools[0])
 values = []
 
 ws.append(titles)
-row = 0
-for client in open_schools:
+row = 1
+for client in open_schools_sorted:
+    column = 0
+    row += 1
+    for key in client:
+        column += 1
+        char = get_column_letter(column)
+        ws[char + str(row)].value = client[key]
+        if column == 4:
+            if row > len(open_schools_sorted):
+                ws[char + str(row+1)].value = "Average time to Open:"
+                ws[char + str(row+2)].value = time_check(pd.to_timedelta(AVERAGE_SUM/AVERAGE_COUNT, unit='D') , time=0)
+                ws[char + str(row+1)].fill = PatternFill(fill_type = 'solid',
+                                                         start_color = '99ccff',
+                                                         end_color = '99ccff')
+                ws[char + str(row+2)].fill = PatternFill(fill_type = 'solid',
+                                                         start_color = '99ccff',
+                                                         end_color = '99ccff')
+
+
+
+# CREATE CUSTOMER DATABASE SHEET
+
+wb.create_sheet("Client List")
+ws = wb["Client List"]
+
+client_list = []
+
+# loop through the dictionary, and during each iteration, pull and append the data you need to the list.
+
+for c, client in enumerate(customer_info):
+    client_list.append(
+        {   "Franchise ID" : client,
+            "Project Status" : joint_data[client][35],
+            "City, State" : joint_data[client][37] + ", " + joint_data[client][38],
+            "Project Start Date" : joint_data[client][32],
+            "Total Months in Process" : days_to_months(time_from_present(joint_data[client][39])),
+            "Notes" : ""
+         })
+
+client_list.pop()
+
+titles = list(client_list[0])
+ws.append(titles)
+row = 1
+for client in client_list:
     column = 0
     row += 1
     for key in client:
@@ -352,8 +646,176 @@ for client in open_schools:
         char = get_column_letter(column)
         ws[char + str(row)].value = client[key]
 
-    
-wb.save('TEST11.xlsx') 
+# STYLE
+# Loop through all the cells with data;
+
+count_row = 0
+for row in ws:
+    if not all([cell.value is None for cell in row]):
+        count_row += 1
+
+count_column = 0
+for column in ws.iter_cols():
+    if not all([cell.value is None for cell in column]):
+        count_column += 1
+        
+for row in range(1, count_row+1):
+    for col in range(1, count_column+1):
+        
+        col_letter = get_column_letter(col)
+        
+        if row == 1:
+            ws[col_letter + str(row)].font = Font(bold = True)
+            ws[col_letter + str(row)].fill = PatternFill(fill_type = 'solid',
+                                                         start_color = 'BAB7B5',
+                                                         end_color = 'BAB7B5'
+                                                         )
+        col_letter = get_column_letter(col)
+        ws.column_dimensions[col_letter].width = 30
+        ws.row_dimensions[row].height = 20
+
+
+
+# open real estate pipeline WS
+
+ws = wb["Real Estate Pipeline"]
+
+count_row = 0
+for row in ws:
+    if not all([cell.value is None for cell in row]):
+        count_row += 1
+
+count_column = 1
+for column in ws.iter_cols():
+    if not all([cell.value is None for cell in column]):
+        count_column += 1
+        
+for row in range(1, count_row+1):
+    for col in range(1, count_column):
+        #if 5 <= count_column <= 7:
+            
+        
+        col_letter = get_column_letter(col)
+        
+        if row == 1:
+            ws[col_letter + str(row)].font = Font(bold = True)
+            ws[col_letter + str(row)].fill = PatternFill(fill_type = 'solid',
+                                                         start_color = 'BAB7B5',
+                                                         end_color = 'BAB7B5'
+                                                         )
+        col_letter = get_column_letter(col+1)
+        
+        ws.column_dimensions[col_letter].width = 30
+        ws.row_dimensions[row].height = 20
+
+ws.move_range("A1:J20", rows=2, cols=1)
+ws.column_dimensions["A"].width = 7
+
+
+# open construction pipeline WS
+
+ws = wb["Construction Pipeline"]
+
+
+count_row = 0
+for row in ws:
+    if not all([cell.value is None for cell in row]):
+        count_row += 1
+
+count_column = 0
+for column in ws.iter_cols():
+    if not all([cell.value is None for cell in column]):
+        count_column += 1
+        
+for row in range(1, count_row+1):
+    for col in range(1, count_column+1):
+        
+        col_letter = get_column_letter(col)
+        
+        if row == 1:
+            ws[col_letter + str(row)].font = Font(bold = True)
+            ws[col_letter + str(row)].fill = PatternFill(fill_type = 'solid',
+                                                         start_color = 'BAB7B5',
+                                                         end_color = 'BAB7B5'
+                                                         )
+        col_letter = get_column_letter(col+1)
+        ws.column_dimensions[col_letter].width = 30
+        ws.row_dimensions[row].height = 20
+        
+ws.move_range("A1:M12", rows=2, cols=1)
+ws.column_dimensions["A"].width = 7
+
+
+
+# open schools formatting
+
+ws = wb["Open Schools"]
+
+
+count_row = 0
+for row in ws:
+    if not all([cell.value is None for cell in row]):
+        count_row += 1
+
+count_column = 0
+for column in ws.iter_cols():
+    if not all([cell.value is None for cell in column]):
+        count_column += 1
+        
+for row in range(1, count_row+1):
+    for col in range(1, count_column+1):
+        
+        col_letter = get_column_letter(col)
+        
+        if row == 1:
+            ws[col_letter + str(row)].font = Font(bold = True)
+            ws[col_letter + str(row)].fill = PatternFill(fill_type = 'solid',
+                                                         start_color = 'BAB7B5',
+                                                         end_color = 'BAB7B5')
+        col_letter = get_column_letter(col+1)    
+        ws.column_dimensions[col_letter].width = 30
+        ws.row_dimensions[row].height = 20
+
+ws.move_range("A1:D16", rows=2, cols=1)
+ws.column_dimensions["A"].width = 7
+
+
+wb.save('result.xlsx') 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     
     
