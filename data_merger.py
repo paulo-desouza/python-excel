@@ -4,6 +4,7 @@ from openpyxl.utils import get_column_letter
 import datetime 
 from operator import itemgetter
 import pandas as pd
+import pyexcel as p
 
 
 
@@ -170,8 +171,12 @@ def time_converter(date):
 datadump1_organized = {}
 datadump2_organized = {}
 
+# file conversion
+p.save_book_as(file_name='Store Opening Timeline Report_from Franconnect.xls',
+               dest_file_name='Store Opening Timeline Report_from Franconnect.xlsx')
 
-wb = load_workbook("1.xlsx")
+
+wb = load_workbook("Store Opening Timeline Report_from Franconnect.xlsx")
 ws = wb.active
 
 # DESCRIPTIONS OF CLIENT IDs HAVE TO MATCH
@@ -199,8 +204,12 @@ for row in range(2, count + 1):
             datadump1_organized[ws['A' + str(row)].value] += [ws[char + str(row)].value]       
 
 
+# file conversion
+p.save_book_as(file_name='Store Summary Dashboard Report_from Franconnect.xls',
+               dest_file_name='Store Summary Dashboard Report_from Franconnect.xlsx')
 
-wb = load_workbook("2.xlsx")
+
+wb = load_workbook("Store Summary Dashboard Report_from Franconnect.xlsx")
 ws = wb.active
 
 
