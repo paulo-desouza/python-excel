@@ -1,11 +1,36 @@
 from openpyxl import load_workbook, Workbook
-from openpyxl.styles import Font, PatternFill, Border, Side
+from openpyxl.styles import Font, PatternFill, Border, Side, Alignment
 from openpyxl.utils import get_column_letter
 import datetime 
 from operator import itemgetter
 import pandas as pd
 import pyexcel as p
+import os
 
+
+
+def get_file_names():
+    """
+    Returns
+    -------
+    All filenames of this python file's current directory, excluding itself. 
+    
+    """
+
+    current_dir = os.getcwd()
+
+    file_list = os.listdir(current_dir)
+
+    file_list.remove("data_merger.py")
+
+    return file_list
+
+
+def set_border(ws, cell_range):
+    thin = Side(border_style="medium", color="000000")
+    for row in ws[cell_range]:
+        for cell in row:
+            cell.border = Border(top=thin, left=thin, right=thin, bottom=thin)
 
 
 def month_year_presenter(date):
@@ -20,6 +45,7 @@ def month_year_presenter(date):
     
     return datetime1.strftime('%B, %Y')
 
+
 def days_to_months(dt_days):
     
     if dt_days == str(dt_days):
@@ -32,6 +58,7 @@ def days_to_months(dt_days):
         months += 1
         days -= 30
     return str(months)
+
 
 def days_int(td):
     
@@ -172,8 +199,22 @@ datadump1_organized = {}
 datadump2_organized = {}
 
 # file conversion
-p.save_book_as(file_name='Store Opening Timeline Report_from Franconnect.xls',
-               dest_file_name='Store Opening Timeline Report_from Franconnect.xlsx')
+
+file_list = get_file_names()
+
+
+
+
+
+
+if 'Store Opening Timeline Report_from Franconnect.xls' in file_list:
+    p.save_book_as(file_name='Store Opening Timeline Report_from Franconnect.xls',
+                   dest_file_name='Store Opening Timeline Report_from Franconnect.xlsx')
+    os.remove('Store Opening Timeline Report_from Franconnect.xls')
+    
+    
+elif 'Store Opening Timeline Report_from Franconnect.xlsx' in file_list:
+    pass
 
 
 wb = load_workbook("Store Opening Timeline Report_from Franconnect.xlsx")
@@ -205,8 +246,17 @@ for row in range(2, count + 1):
 
 
 # file conversion
-p.save_book_as(file_name='Store Summary Dashboard Report_from Franconnect.xls',
-               dest_file_name='Store Summary Dashboard Report_from Franconnect.xlsx')
+
+
+
+
+if 'Store Summary Dashboard Report_from Franconnect.xls' in file_list:
+    p.save_book_as(file_name='Store Summary Dashboard Report_from Franconnect.xls',
+                   dest_file_name='Store Summary Dashboard Report_from Franconnect.xlsx')
+    os.remove('Store Summary Dashboard Report_from Franconnect.xls')
+    
+elif 'Store Opening Timeline Report_from Franconnect.xlsx' in file_list:
+    pass
 
 
 wb = load_workbook("Store Summary Dashboard Report_from Franconnect.xlsx")
@@ -272,11 +322,20 @@ contruction_pipeline = []
 
 # loop through the dictionary, and during each iteration, pull and append the data you need to the list.
 
+AVG_SUM_CP1 = 0
+AVG_SUM_CP2 = 0
+
+
+AVG_COUNT_CP = 0
+
+
+
 for c, client in enumerate(joint_data):
     if c == 0:
         pass
     
     else:
+       
         
         if joint_data[client][13].strip() == "--" :
             finance = "In Process / Self Funded"
@@ -284,8 +343,7 @@ for c, client in enumerate(joint_data):
             finance = "Funded"
         
         # Filtering by STATUS
-        
-        if joint_data[client][35] == "Active Interior Construction":
+        if joint_data[client][35] == "School Fit-Out":
         
             contruction_pipeline.append(
                 {   "Franchise ID" : client,
@@ -294,7 +352,7 @@ for c, client in enumerate(joint_data):
                     "Architecturals (2.5 Months)" : time_check(date_subtraction(joint_data[client][9], joint_data[client][10])),
                     "Permitting (2.5 Months)" : time_check(date_subtraction(joint_data[client][10], joint_data[client][11])),
                     "Active Construction (5 months)" : time_check(time_from_present(joint_data[client][15]), time = 150),
-                    "Final Fitout" : time_check(date_subtraction(joint_data[client][25], joint_data[client][31])),
+                    "Final Fitout (1 Month)" : time_check(time_from_present(joint_data[client][25]), time=30),
                     "Financing Completed" : finance,
                     "Project Start Date" : joint_data[client][1],
                     "Projected Opening" : joint_data[client][39],
@@ -303,7 +361,51 @@ for c, client in enumerate(joint_data):
                     "Notes" : "",
                     "Sorter" : 0
                     
+                    
+                    
+                    
                  })
+            # perform the average calculations here
+            AVG_COUNT_CP += 1  
+            
+                        
+            AVG_SUM_CP1 += int(days_to_months(time_from_present(joint_data[client][1])))
+            
+            AVG_SUM_CP2 += int(days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])))
+            
+            
+        elif joint_data[client][35] == "Active Interior Construction":
+        
+            contruction_pipeline.append(
+                {   "Franchise ID" : client,
+                    "Project Status" : joint_data[client][35],
+                    "City, State" : joint_data[client][37] + ", " + joint_data[client][38],
+                    "Architecturals (2.5 Months)" : time_check(date_subtraction(joint_data[client][9], joint_data[client][10])),
+                    "Permitting (2.5 Months)" : time_check(date_subtraction(joint_data[client][10], joint_data[client][11])),
+                    "Active Construction (5 months)" : time_check(time_from_present(joint_data[client][15]), time = 150),
+                    "Final Fitout (1 Month)" : time_check(time_from_present(joint_data[client][25]), time=30),
+                    "Financing Completed" : finance,
+                    "Project Start Date" : joint_data[client][1],
+                    "Projected Opening" : joint_data[client][39],
+                    "Total Months in Process" : days_to_months(time_from_present(joint_data[client][1])),
+                    "Projected Total Project" : days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])),
+                    "Notes" : "",
+                    "Sorter" : 1
+                    
+                    
+                    
+                    
+                 })
+            
+            # perform the average calculations here
+            AVG_COUNT_CP += 1  
+            
+                        
+            AVG_SUM_CP1 += int(days_to_months(time_from_present(joint_data[client][1])))
+            
+            AVG_SUM_CP2 += int(days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])))
+            
+            
             
         elif joint_data[client][35] == "Pre-Construction":
             
@@ -314,16 +416,29 @@ for c, client in enumerate(joint_data):
                     "Architecturals (2.5 Months)" : time_check(date_subtraction(joint_data[client][9], joint_data[client][10])),
                     "Permitting (2.5 Months)" : time_check(date_subtraction(joint_data[client][10], joint_data[client][11])),
                     "Active Construction (5 months)" : "PRE-CONSTRUCTION",
-                    "Final Fitout" : time_check(date_subtraction(joint_data[client][25], joint_data[client][31])),
+                    "Final Fitout (1 Month)" : time_check(time_from_present(joint_data[client][25]), time=30),
                     "Financing Completed" : finance,
                     "Project Start Date" : joint_data[client][1],
                     "Projected Opening" : joint_data[client][39],
                     "Total Months in Process" : days_to_months(time_from_present(joint_data[client][1])),
                     "Projected Total Project" : days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])),
                     "Notes" : "",
-                    "Sorter" : 1
+                    "Sorter" : 2
+                    
+                    
                     
                  })
+            
+            # perform the average calculations here
+            AVG_COUNT_CP += 1  
+            
+                        
+            AVG_SUM_CP1 += int(days_to_months(time_from_present(joint_data[client][1])))
+            
+            AVG_SUM_CP2 += int(days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])))
+            
+            
+            
             
             
         elif joint_data[client][35] == "Out For Building Permit":
@@ -335,16 +450,29 @@ for c, client in enumerate(joint_data):
                     "Architecturals (2.5 Months)" : time_check(date_subtraction(joint_data[client][9], joint_data[client][10]), time = 75),
                     "Permitting (2.5 Months)" : time_check(time_from_present(joint_data[client][10]), time = 75),
                     "Active Construction (5 months)" : time_check(date_subtraction(joint_data[client][15], joint_data[client][25])),
-                    "Final Fitout" : time_check(date_subtraction(joint_data[client][25], joint_data[client][31])),
+                    "Final Fitout (1 Month)" : time_check(time_from_present(joint_data[client][25]), time=30),
                     "Financing Completed" : finance,
                     "Project Start Date" : joint_data[client][1],
                     "Projected Opening" : joint_data[client][39],
                     "Total Months in Process" : days_to_months(time_from_present(joint_data[client][1])),
                     "Projected Total Project" : days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])),
                     "Notes" : "",
-                    "Sorter" : 2
+                    "Sorter" : 3
+                    
+                    
                     
                  })
+            
+            # perform the average calculations here
+            AVG_COUNT_CP += 1  
+            
+                        
+            AVG_SUM_CP1 += int(days_to_months(time_from_present(joint_data[client][1])))
+            
+            AVG_SUM_CP2 += int(days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])))
+            
+            
+            
             
             
         elif joint_data[client][35] ==  "Architectural Design":
@@ -356,16 +484,29 @@ for c, client in enumerate(joint_data):
                     "Architecturals (2.5 Months)" :time_check(time_from_present(joint_data[client][9]), time=75),
                     "Permitting (2.5 Months)" : time_check(date_subtraction(joint_data[client][10], joint_data[client][11])),
                     "Active Construction (5 months)" : time_check(date_subtraction(joint_data[client][15], joint_data[client][25])),
-                    "Final Fitout" : time_check(date_subtraction(joint_data[client][25], joint_data[client][31])),
+                    "Final Fitout (1 Month)" : time_check(time_from_present(joint_data[client][25]), time=30),
                     "Financing Completed" : finance,
                     "Project Start Date" : joint_data[client][1],
                     "Projected Opening" : joint_data[client][39],
                     "Total Months in Process" : days_to_months(time_from_present(joint_data[client][1])),
                     "Projected Total Project" : days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])),
                     "Notes" : "",
-                    "Sorter" : 3
+                    "Sorter" : 4
+                    
+                    
                     
                  })
+            
+            # perform the average calculations here
+            AVG_COUNT_CP += 1  
+            
+                        
+            AVG_SUM_CP1 += int(days_to_months(time_from_present(joint_data[client][1])))
+            
+            AVG_SUM_CP2 += int(days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])))
+            
+            
+            
             
             
         elif joint_data[client][35] == "Ground Up Architecturals":
@@ -377,16 +518,31 @@ for c, client in enumerate(joint_data):
                     "Architecturals (2.5 Months)" : time_check(time_from_present(joint_data[client][9]), time=75),
                     "Permitting (2.5 Months)" : time_check(date_subtraction(joint_data[client][10], joint_data[client][11])),
                     "Active Construction (5 months)" : time_check(date_subtraction(joint_data[client][15], joint_data[client][25])),
-                    "Final Fitout" : time_check(date_subtraction(joint_data[client][25], joint_data[client][31])),
+                    "Final Fitout (1 Month)" : time_check(time_from_present(joint_data[client][25]), time=30),
                     "Financing Completed" : finance,
                     "Project Start Date" : joint_data[client][1],
                     "Projected Opening" : joint_data[client][39],
                     "Total Months in Process" : days_to_months(time_from_present(joint_data[client][1])),
                     "Projected Total Project" : days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])),
                     "Notes" : "",
-                    "Sorter" : 4
+                    "Sorter" : 5
+                    
+                  
                     
                  })
+            # perform the average calculations here
+            AVG_COUNT_CP += 1  
+            
+                        
+            AVG_SUM_CP1 += int(days_to_months(time_from_present(joint_data[client][1])))
+            AVG_SUM_CP2 += int(days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])))
+            
+            
+            
+        
+            
+            
+
             
 # ORDER CONTRUCTION_PIPELINE LIST BY STATUS HERE:
 construction_sorted = []
@@ -402,11 +558,20 @@ for client in construction_sorted:
 
 realestate_pipeline = []
 
+
+AVG_SUM_RE1 = 0
+AVG_SUM_RE2 = 0
+
+
+AVG_COUNT_RE = 0
+
+
 for c, client in enumerate(joint_data):
     if c == 0:
         pass
     
     else:
+      
         # FILTERING BY STATUS
         if joint_data[client][35] == "Lease Negotiations (LOI Signed)":
         
@@ -423,6 +588,14 @@ for c, client in enumerate(joint_data):
                     "Projected Total Months" : days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])),
                     "Sorter" : 0
                  })
+            
+            # PERFORM AVERAGE CALCS HERE
+            AVG_COUNT_RE += 1
+            
+            AVG_SUM_RE1 += int(days_to_months(time_from_present(joint_data[client][1])))
+            AVG_SUM_RE2 += int(days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])))
+            
+            
           
             
         elif joint_data[client][35] == "LOI Negotiations":
@@ -441,6 +614,14 @@ for c, client in enumerate(joint_data):
                     "Sorter" : 1
                  })
             
+            # PERFORM AVERAGE CALCS HERE
+            AVG_COUNT_RE += 1
+            
+            AVG_SUM_RE1 += int(days_to_months(time_from_present(joint_data[client][1])))
+            AVG_SUM_RE2 += int(days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])))
+            
+            
+            
         elif joint_data[client][35] == "Site Selection":
             
             realestate_pipeline.append({  
@@ -456,6 +637,14 @@ for c, client in enumerate(joint_data):
                     "Projected Total Months" : days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])),
                     "Sorter" : 2
                  })
+            
+            # PERFORM AVERAGE CALCS HERE
+            AVG_COUNT_RE += 1
+            
+            AVG_SUM_RE1 += int(days_to_months(time_from_present(joint_data[client][1])))
+            AVG_SUM_RE2 += int(days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])))
+            
+            
            
         
                 
@@ -612,12 +801,12 @@ for client in open_schools_sorted:
         ws[char + str(row)].value = client[key]
         if column == 4:
             if row > len(open_schools_sorted):
-                ws[char + str(row+1)].value = "Average time to Open:"
-                ws[char + str(row+2)].value = time_check(pd.to_timedelta(AVERAGE_SUM/AVERAGE_COUNT, unit='D') , time=0)
-                ws[char + str(row+1)].fill = PatternFill(fill_type = 'solid',
+                ws[get_column_letter(column-1) + str(row+1)].value = "Average time to Open:"
+                ws[char + str(row+1)].value = time_check(pd.to_timedelta(AVERAGE_SUM/AVERAGE_COUNT, unit='D') , time=0)
+                ws[get_column_letter(column-1) + str(row+1)].fill = PatternFill(fill_type = 'solid',
                                                          start_color = '99ccff',
                                                          end_color = '99ccff')
-                ws[char + str(row+2)].fill = PatternFill(fill_type = 'solid',
+                ws[char + str(row+1)].fill = PatternFill(fill_type = 'solid',
                                                          start_color = '99ccff',
                                                          end_color = '99ccff')
 
@@ -717,10 +906,61 @@ for row in range(1, count_row+1):
         ws.column_dimensions[col_letter].width = 30
         ws.row_dimensions[row].height = 20
 
-ws.move_range("A1:J20", rows=2, cols=1)
+ws.move_range("A1:J" + str(count_row+3), rows=2, cols=1)
 ws.column_dimensions["A"].width = 7
 
 
+# TWEAKS
+
+
+DATE = str(datetime.datetime.now().strftime('%m-%d-%Y'))
+
+ws.merge_cells("B2:C2")
+
+ws["B2"].value = "Report Generated on " + DATE
+
+
+AVG_VALUE_RE1 = AVG_SUM_RE1 / AVG_COUNT_RE
+
+AVG_VALUE_RE2 = AVG_SUM_RE2 / AVG_COUNT_RE
+
+
+count_row = 0
+for row in ws:
+    if not all([cell.value is None for cell in row]):
+        count_row += 1
+        
+ws["J"+ str(count_row+2)].value = "AVERAGE = " + f'{AVG_VALUE_RE1:.2f}'
+ws["K"+ str(count_row+2)].value = "AVERAGE = " + f'{AVG_VALUE_RE2:.2f}'
+
+set_border(ws, "J"+ str(count_row+2) + ":K"+ str(count_row+2))
+
+ws.merge_cells("F2:H2")
+ws["f2"].value = "Real Estate Pipeline"
+ws['f2'].alignment = Alignment(horizontal = "center", vertical = "center")
+
+ws["F2"].font = Font(bold = True)
+ws["F2"].fill = PatternFill(fill_type = 'solid',
+                                             start_color = 'BAB7B5',
+                                             end_color = 'BAB7B5'
+                                             )
+
+set_border(ws, "f2:H"+ str(count_row + 1))
+
+for row in range(1, 100):
+    
+    ws.row_dimensions[row].height = 30
+    
+    for column in range(1,100):
+        char = get_column_letter(column)
+        
+        if 5 < column < 9:
+            ws.column_dimensions[char].width = 37
+        
+        ws[char + str(row)].alignment = Alignment(horizontal = "center", vertical = "center")
+        
+
+        
 # open construction pipeline WS
 
 ws = wb["Construction Pipeline"]
@@ -751,9 +991,57 @@ for row in range(1, count_row+1):
         ws.column_dimensions[col_letter].width = 30
         ws.row_dimensions[row].height = 20
         
-ws.move_range("A1:M12", rows=2, cols=1)
+ws.move_range("A1:M" + str(count_row+3), rows=2, cols=1)
 ws.column_dimensions["A"].width = 7
 
+
+#TWEAKS
+
+AVG_VALUE_CP1 = AVG_SUM_CP1 / AVG_COUNT_CP
+
+AVG_VALUE_CP2 = AVG_SUM_CP2 / AVG_COUNT_CP
+
+
+ws.merge_cells("B2:C2")
+
+ws["B2"].value = "Report Generated on " + DATE
+
+
+count_row = 0
+for row in ws:
+    if not all([cell.value is None for cell in row]):
+        count_row += 1
+        
+ws["L"+ str(count_row+2)].value = "AVERAGE = " + f'{AVG_VALUE_CP1:.2f}'
+ws["M"+ str(count_row+2)].value = "AVERAGE = " + f'{AVG_VALUE_CP2:.2f}'
+
+set_border(ws, "L"+ str(count_row+2) + ":M"+ str(count_row+2))
+
+ws.merge_cells("E2:H2")
+ws["e2"].value = "Development Journey"
+ws['e2'].alignment = Alignment(horizontal = "center", vertical = "center")
+
+ws["e2"].font = Font(bold = True)
+ws["e2"].fill = PatternFill(fill_type = 'solid',
+                                             start_color = 'BAB7B5',
+                                             end_color = 'BAB7B5'
+                                             )
+
+set_border(ws, "E2:H" + str(count_row+1))
+
+for row in range(1, 100):
+    
+    ws.row_dimensions[row].height = 30
+    
+    for column in range(1,100):
+        char = get_column_letter(column)
+        
+        if 4 < column < 9:
+            ws.column_dimensions[char].width = 37
+        
+        ws[char + str(row)].alignment = Alignment(horizontal = "center", vertical = "center")
+        
+        
 
 
 # open schools formatting
@@ -785,8 +1073,33 @@ for row in range(1, count_row+1):
         ws.column_dimensions[col_letter].width = 30
         ws.row_dimensions[row].height = 20
 
-ws.move_range("A1:D16", rows=2, cols=1)
+ws.move_range("A1:D" + str(count_row+3), rows=2, cols=1)
 ws.column_dimensions["A"].width = 7
+
+
+
+for row in range(1, 100):
+    
+    ws.row_dimensions[row].height = 30
+    
+    for column in range(1,100):
+        char = get_column_letter(column)
+        
+        ws[char + str(row)].alignment = Alignment(horizontal = "center", vertical = "center")
+        
+        
+
+
+
+
+
+
+
+ 
+
+
+
+
 
 
 wb.save('result.xlsx') 
