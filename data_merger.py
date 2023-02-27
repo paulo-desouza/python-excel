@@ -234,7 +234,7 @@ for row in ws:
 
 # GET ALL CLIENTS IN THESE DICTS
 
-for row in range(2, count + 1):
+for row in range(12, count + 1):
     for column in range(1, 36):
         char = get_column_letter(column)
         
@@ -1088,18 +1088,11 @@ for row in range(1, 100):
         ws[char + str(row)].alignment = Alignment(horizontal = "center", vertical = "center")
         
         
-
-
-
-
-
+for works in wb.worksheets:
+    works.sheet_view.zoomScale = 80
 
 
  
-
-
-
-
 
 
 wb.save('result.xlsx') 
