@@ -203,10 +203,6 @@ datadump2_organized = {}
 file_list = get_file_names()
 
 
-
-
-
-
 if 'Store Opening Timeline Report_from Franconnect.xls' in file_list:
     p.save_book_as(file_name='Store Opening Timeline Report_from Franconnect.xls',
                    dest_file_name='Store Opening Timeline Report_from Franconnect.xlsx')
@@ -318,6 +314,9 @@ keys = list(joint_data)
 # EACH OF THE TABLES.
 
 
+
+
+
 contruction_pipeline = []
 
 # loop through the dictionary, and during each iteration, pull and append the data you need to the list.
@@ -335,211 +334,216 @@ for c, client in enumerate(joint_data):
         pass
     
     else:
-       
         
-        if joint_data[client][13].strip() == "--" :
-            finance = "In Process / Self Funded"
+        if joint_data[client][1].strip() == '--':
+            
+            pass
+        
         else:
-            finance = "Funded"
         
-        # Filtering by STATUS
-        if joint_data[client][35] == "School Fit-Out":
-        
-            contruction_pipeline.append(
-                {   "Franchise ID" : client,
-                    "Project Status" : joint_data[client][35],
-                    "City, State" : joint_data[client][37] + ", " + joint_data[client][38],
-                    "Architecturals (2.5 Months)" : time_check(date_subtraction(joint_data[client][9], joint_data[client][10])),
-                    "Permitting (2.5 Months)" : time_check(date_subtraction(joint_data[client][10], joint_data[client][11])),
-                    "Active Construction (5 months)" : time_check(time_from_present(joint_data[client][15]), time = 150),
-                    "Final Fitout (1 Month)" : time_check(time_from_present(joint_data[client][25]), time=30),
-                    "Financing Completed" : finance,
-                    "Project Start Date" : joint_data[client][1],
-                    "Projected Opening" : joint_data[client][39],
-                    "Total Months in Process" : days_to_months(time_from_present(joint_data[client][1])),
-                    "Projected Total Project" : days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])),
-                    "Notes" : "",
-                    "Sorter" : 0
-                    
-                    
-                    
-                    
-                 })
-            # perform the average calculations here
-            AVG_COUNT_CP += 1  
+            if joint_data[client][13].strip() == "--" :
+                finance = "In Process / Self Funded"
+            else:
+                finance = "Funded"
             
+            # Filtering by STATUS
+            if joint_data[client][35] == "School Fit-Out":
+            
+                contruction_pipeline.append(
+                    {   "Franchise ID" : client,
+                        "Project Status" : joint_data[client][35],
+                        "City, State" : joint_data[client][37] + ", " + joint_data[client][38],
+                        "Architecturals (2.5 Months)" : time_check(date_subtraction(joint_data[client][9], joint_data[client][10])),
+                        "Permitting (2.5 Months)" : time_check(date_subtraction(joint_data[client][10], joint_data[client][11])),
+                        "Active Construction (5 months)" : time_check(time_from_present(joint_data[client][15]), time = 150),
+                        "Final Fitout (1 Month)" : time_check(time_from_present(joint_data[client][25]), time=30),
+                        "Financing Completed" : finance,
+                        "Project Start Date" : joint_data[client][1],
+                        "Projected Opening" : joint_data[client][39],
+                        "Total Months in Process" : days_to_months(time_from_present(joint_data[client][1])),
+                        "Projected Total Project" : days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])),
+                        "Notes" : "",
+                        "Sorter" : 0
                         
-            AVG_SUM_CP1 += int(days_to_months(time_from_present(joint_data[client][1])))
-            
-            AVG_SUM_CP2 += int(days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])))
-            
-            
-        elif joint_data[client][35] == "Active Interior Construction":
-        
-            contruction_pipeline.append(
-                {   "Franchise ID" : client,
-                    "Project Status" : joint_data[client][35],
-                    "City, State" : joint_data[client][37] + ", " + joint_data[client][38],
-                    "Architecturals (2.5 Months)" : time_check(date_subtraction(joint_data[client][9], joint_data[client][10])),
-                    "Permitting (2.5 Months)" : time_check(date_subtraction(joint_data[client][10], joint_data[client][11])),
-                    "Active Construction (5 months)" : time_check(time_from_present(joint_data[client][15]), time = 150),
-                    "Final Fitout (1 Month)" : time_check(time_from_present(joint_data[client][25]), time=30),
-                    "Financing Completed" : finance,
-                    "Project Start Date" : joint_data[client][1],
-                    "Projected Opening" : joint_data[client][39],
-                    "Total Months in Process" : days_to_months(time_from_present(joint_data[client][1])),
-                    "Projected Total Project" : days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])),
-                    "Notes" : "",
-                    "Sorter" : 1
-                    
-                    
-                    
-                    
-                 })
-            
-            # perform the average calculations here
-            AVG_COUNT_CP += 1  
-            
                         
-            AVG_SUM_CP1 += int(days_to_months(time_from_present(joint_data[client][1])))
-            
-            AVG_SUM_CP2 += int(days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])))
-            
-            
-            
-        elif joint_data[client][35] == "Pre-Construction":
-            
-            contruction_pipeline.append(
-                {   "Franchise ID" : client,
-                    "Project Status" : joint_data[client][35],
-                    "City, State" : joint_data[client][37] + ", " + joint_data[client][38],
-                    "Architecturals (2.5 Months)" : time_check(date_subtraction(joint_data[client][9], joint_data[client][10])),
-                    "Permitting (2.5 Months)" : time_check(date_subtraction(joint_data[client][10], joint_data[client][11])),
-                    "Active Construction (5 months)" : "PRE-CONSTRUCTION",
-                    "Final Fitout (1 Month)" : time_check(time_from_present(joint_data[client][25]), time=30),
-                    "Financing Completed" : finance,
-                    "Project Start Date" : joint_data[client][1],
-                    "Projected Opening" : joint_data[client][39],
-                    "Total Months in Process" : days_to_months(time_from_present(joint_data[client][1])),
-                    "Projected Total Project" : days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])),
-                    "Notes" : "",
-                    "Sorter" : 2
-                    
-                    
-                    
-                 })
-            
-            # perform the average calculations here
-            AVG_COUNT_CP += 1  
-            
                         
-            AVG_SUM_CP1 += int(days_to_months(time_from_present(joint_data[client][1])))
-            
-            AVG_SUM_CP2 += int(days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])))
-            
-            
-            
-            
-            
-        elif joint_data[client][35] == "Out For Building Permit":
-            
-            contruction_pipeline.append(
-                {   "Franchise ID" : client,
-                    "Project Status" : joint_data[client][35],
-                    "City, State" : joint_data[client][37] + ", " + joint_data[client][38],
-                    "Architecturals (2.5 Months)" : time_check(date_subtraction(joint_data[client][9], joint_data[client][10]), time = 75),
-                    "Permitting (2.5 Months)" : time_check(time_from_present(joint_data[client][10]), time = 75),
-                    "Active Construction (5 months)" : time_check(date_subtraction(joint_data[client][15], joint_data[client][25])),
-                    "Final Fitout (1 Month)" : time_check(time_from_present(joint_data[client][25]), time=30),
-                    "Financing Completed" : finance,
-                    "Project Start Date" : joint_data[client][1],
-                    "Projected Opening" : joint_data[client][39],
-                    "Total Months in Process" : days_to_months(time_from_present(joint_data[client][1])),
-                    "Projected Total Project" : days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])),
-                    "Notes" : "",
-                    "Sorter" : 3
-                    
-                    
-                    
-                 })
-            
-            # perform the average calculations here
-            AVG_COUNT_CP += 1  
-            
                         
-            AVG_SUM_CP1 += int(days_to_months(time_from_present(joint_data[client][1])))
+                     })
+                # perform the average calculations here
+                AVG_COUNT_CP += 1  
+                
+                            
+                AVG_SUM_CP1 += int(days_to_months(time_from_present(joint_data[client][1])))
+                
+                AVG_SUM_CP2 += int(days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])))
             
-            AVG_SUM_CP2 += int(days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])))
             
+            elif joint_data[client][35] == "Active Interior Construction":
             
-            
-            
-            
-        elif joint_data[client][35] ==  "Architectural Design":
-            
-            contruction_pipeline.append(
-                {   "Franchise ID" : client,
-                    "Project Status" : joint_data[client][35],
-                    "City, State" : joint_data[client][37] + ", " + joint_data[client][38],
-                    "Architecturals (2.5 Months)" :time_check(time_from_present(joint_data[client][9]), time=75),
-                    "Permitting (2.5 Months)" : time_check(date_subtraction(joint_data[client][10], joint_data[client][11])),
-                    "Active Construction (5 months)" : time_check(date_subtraction(joint_data[client][15], joint_data[client][25])),
-                    "Final Fitout (1 Month)" : time_check(time_from_present(joint_data[client][25]), time=30),
-                    "Financing Completed" : finance,
-                    "Project Start Date" : joint_data[client][1],
-                    "Projected Opening" : joint_data[client][39],
-                    "Total Months in Process" : days_to_months(time_from_present(joint_data[client][1])),
-                    "Projected Total Project" : days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])),
-                    "Notes" : "",
-                    "Sorter" : 4
-                    
-                    
-                    
-                 })
-            
-            # perform the average calculations here
-            AVG_COUNT_CP += 1  
-            
+                contruction_pipeline.append(
+                    {   "Franchise ID" : client,
+                        "Project Status" : joint_data[client][35],
+                        "City, State" : joint_data[client][37] + ", " + joint_data[client][38],
+                        "Architecturals (2.5 Months)" : time_check(date_subtraction(joint_data[client][9], joint_data[client][10])),
+                        "Permitting (2.5 Months)" : time_check(date_subtraction(joint_data[client][10], joint_data[client][11])),
+                        "Active Construction (5 months)" : time_check(time_from_present(joint_data[client][15]), time = 150),
+                        "Final Fitout (1 Month)" : time_check(time_from_present(joint_data[client][25]), time=30),
+                        "Financing Completed" : finance,
+                        "Project Start Date" : joint_data[client][1],
+                        "Projected Opening" : joint_data[client][39],
+                        "Total Months in Process" : days_to_months(time_from_present(joint_data[client][1])),
+                        "Projected Total Project" : days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])),
+                        "Notes" : "",
+                        "Sorter" : 1
                         
-            AVG_SUM_CP1 += int(days_to_months(time_from_present(joint_data[client][1])))
-            
-            AVG_SUM_CP2 += int(days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])))
-            
-            
-            
-            
-            
-        elif joint_data[client][35] == "Ground Up Architecturals":
-            
-            contruction_pipeline.append(
-                {   "Franchise ID" : client,
-                    "Project Status" : joint_data[client][35],
-                    "City, State" : joint_data[client][37] + ", " + joint_data[client][38],
-                    "Architecturals (2.5 Months)" : time_check(time_from_present(joint_data[client][9]), time=75),
-                    "Permitting (2.5 Months)" : time_check(date_subtraction(joint_data[client][10], joint_data[client][11])),
-                    "Active Construction (5 months)" : time_check(date_subtraction(joint_data[client][15], joint_data[client][25])),
-                    "Final Fitout (1 Month)" : time_check(time_from_present(joint_data[client][25]), time=30),
-                    "Financing Completed" : finance,
-                    "Project Start Date" : joint_data[client][1],
-                    "Projected Opening" : joint_data[client][39],
-                    "Total Months in Process" : days_to_months(time_from_present(joint_data[client][1])),
-                    "Projected Total Project" : days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])),
-                    "Notes" : "",
-                    "Sorter" : 5
-                    
-                  
-                    
-                 })
-            # perform the average calculations here
-            AVG_COUNT_CP += 1  
-            
                         
-            AVG_SUM_CP1 += int(days_to_months(time_from_present(joint_data[client][1])))
-            AVG_SUM_CP2 += int(days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])))
+                        
+                        
+                     })
+                
+                # perform the average calculations here
+                AVG_COUNT_CP += 1  
+                
+                            
+                AVG_SUM_CP1 += int(days_to_months(time_from_present(joint_data[client][1])))
+                
+                AVG_SUM_CP2 += int(days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])))
+                
+                
+                
+            elif joint_data[client][35] == "Pre-Construction":
+                
+                contruction_pipeline.append(
+                    {   "Franchise ID" : client,
+                        "Project Status" : joint_data[client][35],
+                        "City, State" : joint_data[client][37] + ", " + joint_data[client][38],
+                        "Architecturals (2.5 Months)" : time_check(date_subtraction(joint_data[client][9], joint_data[client][10])),
+                        "Permitting (2.5 Months)" : time_check(date_subtraction(joint_data[client][10], joint_data[client][11])),
+                        "Active Construction (5 months)" : "PRE-CONSTRUCTION",
+                        "Final Fitout (1 Month)" : time_check(time_from_present(joint_data[client][25]), time=30),
+                        "Financing Completed" : finance,
+                        "Project Start Date" : joint_data[client][1],
+                        "Projected Opening" : joint_data[client][39],
+                        "Total Months in Process" : days_to_months(time_from_present(joint_data[client][1])),
+                        "Projected Total Project" : days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])),
+                        "Notes" : "",
+                        "Sorter" : 2
+                        
+                        
+                        
+                     })
+                
+                # perform the average calculations here
+                AVG_COUNT_CP += 1  
+                
+                            
+                AVG_SUM_CP1 += int(days_to_months(time_from_present(joint_data[client][1])))
+                
+                AVG_SUM_CP2 += int(days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])))
+                
+                
+                
+                
+                
+            elif joint_data[client][35] == "Out For Building Permit":
+                
+                contruction_pipeline.append(
+                    {   "Franchise ID" : client,
+                        "Project Status" : joint_data[client][35],
+                        "City, State" : joint_data[client][37] + ", " + joint_data[client][38],
+                        "Architecturals (2.5 Months)" : time_check(date_subtraction(joint_data[client][9], joint_data[client][10]), time = 75),
+                        "Permitting (2.5 Months)" : time_check(time_from_present(joint_data[client][10]), time = 75),
+                        "Active Construction (5 months)" : time_check(date_subtraction(joint_data[client][15], joint_data[client][25])),
+                        "Final Fitout (1 Month)" : time_check(time_from_present(joint_data[client][25]), time=30),
+                        "Financing Completed" : finance,
+                        "Project Start Date" : joint_data[client][1],
+                        "Projected Opening" : joint_data[client][39],
+                        "Total Months in Process" : days_to_months(time_from_present(joint_data[client][1])),
+                        "Projected Total Project" : days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])),
+                        "Notes" : "",
+                        "Sorter" : 3
+                        
+                        
+                        
+                     })
+                
+                # perform the average calculations here
+                AVG_COUNT_CP += 1  
+                
+                            
+                AVG_SUM_CP1 += int(days_to_months(time_from_present(joint_data[client][1])))
+                
+                AVG_SUM_CP2 += int(days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])))
+                
+                
+                
+                
+                
+            elif joint_data[client][35] ==  "Architectural Design":
+                
+                contruction_pipeline.append(
+                    {   "Franchise ID" : client,
+                        "Project Status" : joint_data[client][35],
+                        "City, State" : joint_data[client][37] + ", " + joint_data[client][38],
+                        "Architecturals (2.5 Months)" :time_check(time_from_present(joint_data[client][9]), time=75),
+                        "Permitting (2.5 Months)" : time_check(date_subtraction(joint_data[client][10], joint_data[client][11])),
+                        "Active Construction (5 months)" : time_check(date_subtraction(joint_data[client][15], joint_data[client][25])),
+                        "Final Fitout (1 Month)" : time_check(time_from_present(joint_data[client][25]), time=30),
+                        "Financing Completed" : finance,
+                        "Project Start Date" : joint_data[client][1],
+                        "Projected Opening" : joint_data[client][39],
+                        "Total Months in Process" : days_to_months(time_from_present(joint_data[client][1])),
+                        "Projected Total Project" : days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])),
+                        "Notes" : "",
+                        "Sorter" : 4
+                        
+                        
+                        
+                     })
+                
+                # perform the average calculations here
+                AVG_COUNT_CP += 1  
+                
+                            
+                AVG_SUM_CP1 += int(days_to_months(time_from_present(joint_data[client][1])))
+                
+                AVG_SUM_CP2 += int(days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])))
+                
+                
+                
+                
+                
+            elif joint_data[client][35] == "Ground Up Architecturals":
+                
+                contruction_pipeline.append(
+                    {   "Franchise ID" : client,
+                        "Project Status" : joint_data[client][35],
+                        "City, State" : joint_data[client][37] + ", " + joint_data[client][38],
+                        "Architecturals (2.5 Months)" : time_check(time_from_present(joint_data[client][9]), time=75),
+                        "Permitting (2.5 Months)" : time_check(date_subtraction(joint_data[client][10], joint_data[client][11])),
+                        "Active Construction (5 months)" : time_check(date_subtraction(joint_data[client][15], joint_data[client][25])),
+                        "Final Fitout (1 Month)" : time_check(time_from_present(joint_data[client][25]), time=30),
+                        "Financing Completed" : finance,
+                        "Project Start Date" : joint_data[client][1],
+                        "Projected Opening" : joint_data[client][39],
+                        "Total Months in Process" : days_to_months(time_from_present(joint_data[client][1])),
+                        "Projected Total Project" : days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])),
+                        "Notes" : "",
+                        "Sorter" : 5
+                        
+                      
+                        
+                     })
+                # perform the average calculations here
+                AVG_COUNT_CP += 1  
+                
+                            
+                AVG_SUM_CP1 += int(days_to_months(time_from_present(joint_data[client][1])))
+                AVG_SUM_CP2 += int(days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])))
+                
+                
+                
             
-            
-            
-        
             
             
 
@@ -571,80 +575,83 @@ for c, client in enumerate(joint_data):
         pass
     
     else:
+        if joint_data[client][1].strip() == '--':
+            pass
+        else:
       
-        # FILTERING BY STATUS
-        if joint_data[client][35] == "Lease Negotiations (LOI Signed)":
-        
-            realestate_pipeline.append({  
-                    "Franchise ID" : client,
-                    "Project Status" : joint_data[client][35],
-                    "City" : joint_data[client][37],
-                    "State/Province" : joint_data[client][38],
-                    "Site Selection (45 days)" : time_check(date_subtraction(joint_data[client][2], joint_data[client][3]), time = 45),
-                    "LOI Negotiations (5 months)" : time_check(date_subtraction(joint_data[client][4], joint_data[client][6]), time = 150),
-                    "Lease Negotiations (3 months)" : time_check(time_from_present(joint_data[client][6]), time=90),
-                    "Expected Opening Date" : joint_data[client][39],
-                    "Months in Process" : days_to_months(time_from_present(joint_data[client][1])),
-                    "Projected Total Months" : days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])),
-                    "Sorter" : 0
-                 })
+            # FILTERING BY STATUS
+            if joint_data[client][35] == "Lease Negotiations (LOI Signed)":
             
-            # PERFORM AVERAGE CALCS HERE
-            AVG_COUNT_RE += 1
-            
-            AVG_SUM_RE1 += int(days_to_months(time_from_present(joint_data[client][1])))
-            AVG_SUM_RE2 += int(days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])))
-            
-            
-          
-            
-        elif joint_data[client][35] == "LOI Negotiations":
-            
-            realestate_pipeline.append({  
-                    "Franchise ID" : client,
-                    "Project Status" : joint_data[client][35],
-                    "City" : joint_data[client][37],
-                    "State/Province" : joint_data[client][38],
-                    "Site Selection (45 days)" : time_check(date_subtraction(joint_data[client][2], joint_data[client][3]), time = 45),
-                    "LOI Negotiations (5 months)" : time_check(time_from_present(joint_data[client][4]), time=150),
-                    "Lease Negotiations (3 months)" : time_check(date_subtraction(joint_data[client][6], joint_data[client][9]), time = 90),
-                    "Expected Opening Date" : joint_data[client][39],
-                    "Months in Process" : days_to_months(time_from_present(joint_data[client][1])),
-                    "Projected Total Months" : days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])),
-                    "Sorter" : 1
-                 })
-            
-            # PERFORM AVERAGE CALCS HERE
-            AVG_COUNT_RE += 1
-            
-            AVG_SUM_RE1 += int(days_to_months(time_from_present(joint_data[client][1])))
-            AVG_SUM_RE2 += int(days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])))
-            
-            
-            
-        elif joint_data[client][35] == "Site Selection":
-            
-            realestate_pipeline.append({  
-                    "Franchise ID" : client,
-                    "Project Status" : joint_data[client][35],
-                    "City" : joint_data[client][37],
-                    "State/Province" : joint_data[client][38],
-                    "Site Selection (45 days)" : time_check(time_from_present(joint_data[client][2]), time = 45),
-                    "LOI Negotiations (5 months)" : time_check(date_subtraction(joint_data[client][4], joint_data[client][6]), time = 150),
-                    "Lease Negotiations (3 months)" : time_check(date_subtraction(joint_data[client][6],joint_data[client][9]), time = 90),
-                    "Expected Opening Date" : joint_data[client][39],
-                    "Months in Process" : days_to_months(time_from_present(joint_data[client][1])),
-                    "Projected Total Months" : days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])),
-                    "Sorter" : 2
-                 })
-            
-            # PERFORM AVERAGE CALCS HERE
-            AVG_COUNT_RE += 1
-            
-            AVG_SUM_RE1 += int(days_to_months(time_from_present(joint_data[client][1])))
-            AVG_SUM_RE2 += int(days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])))
-            
-            
+                realestate_pipeline.append({  
+                        "Franchise ID" : client,
+                        "Project Status" : joint_data[client][35],
+                        "City" : joint_data[client][37],
+                        "State/Province" : joint_data[client][38],
+                        "Site Selection (45 days)" : time_check(date_subtraction(joint_data[client][2], joint_data[client][3]), time = 45),
+                        "LOI Negotiations (5 months)" : time_check(date_subtraction(joint_data[client][4], joint_data[client][6]), time = 150),
+                        "Lease Negotiations (3 months)" : time_check(time_from_present(joint_data[client][6]), time=90),
+                        "Expected Opening Date" : joint_data[client][39],
+                        "Months in Process" : days_to_months(time_from_present(joint_data[client][1])),
+                        "Projected Total Months" : days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])),
+                        "Sorter" : 0
+                     })
+                
+                # PERFORM AVERAGE CALCS HERE
+                AVG_COUNT_RE += 1
+                
+                AVG_SUM_RE1 += int(days_to_months(time_from_present(joint_data[client][1])))
+                AVG_SUM_RE2 += int(days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])))
+                
+                
+              
+                
+            elif joint_data[client][35] == "LOI Negotiations":
+                
+                realestate_pipeline.append({  
+                        "Franchise ID" : client,
+                        "Project Status" : joint_data[client][35],
+                        "City" : joint_data[client][37],
+                        "State/Province" : joint_data[client][38],
+                        "Site Selection (45 days)" : time_check(date_subtraction(joint_data[client][2], joint_data[client][3]), time = 45),
+                        "LOI Negotiations (5 months)" : time_check(time_from_present(joint_data[client][4]), time=150),
+                        "Lease Negotiations (3 months)" : time_check(date_subtraction(joint_data[client][6], joint_data[client][9]), time = 90),
+                        "Expected Opening Date" : joint_data[client][39],
+                        "Months in Process" : days_to_months(time_from_present(joint_data[client][1])),
+                        "Projected Total Months" : days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])),
+                        "Sorter" : 1
+                     })
+                
+                # PERFORM AVERAGE CALCS HERE
+                AVG_COUNT_RE += 1
+                
+                AVG_SUM_RE1 += int(days_to_months(time_from_present(joint_data[client][1])))
+                AVG_SUM_RE2 += int(days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])))
+                
+                
+                
+            elif joint_data[client][35] == "Site Selection":
+                
+                realestate_pipeline.append({  
+                        "Franchise ID" : client,
+                        "Project Status" : joint_data[client][35],
+                        "City" : joint_data[client][37],
+                        "State/Province" : joint_data[client][38],
+                        "Site Selection (45 days)" : time_check(time_from_present(joint_data[client][2]), time = 45),
+                        "LOI Negotiations (5 months)" : time_check(date_subtraction(joint_data[client][4], joint_data[client][6]), time = 150),
+                        "Lease Negotiations (3 months)" : time_check(date_subtraction(joint_data[client][6],joint_data[client][9]), time = 90),
+                        "Expected Opening Date" : joint_data[client][39],
+                        "Months in Process" : days_to_months(time_from_present(joint_data[client][1])),
+                        "Projected Total Months" : days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])),
+                        "Sorter" : 2
+                     })
+                
+                # PERFORM AVERAGE CALCS HERE
+                AVG_COUNT_RE += 1
+                
+                AVG_SUM_RE1 += int(days_to_months(time_from_present(joint_data[client][1])))
+                AVG_SUM_RE2 += int(days_to_months(date_subtraction(joint_data[client][1], joint_data[client][39])))
+                
+                
            
         
                 
